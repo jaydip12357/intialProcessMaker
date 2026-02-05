@@ -9,16 +9,16 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy backend application code
+COPY backend/app ./app
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
 
-# Expose port (Railway uses PORT env var)
+# Expose port
 EXPOSE 8000
 
 # Run the application with Railway's PORT
