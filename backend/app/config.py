@@ -1,38 +1,38 @@
 """Configuration settings for Course Copilot backend."""
 import os
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 from functools import lru_cache
-
-load_dotenv()
+from typing import Optional
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
-    # Database
-    database_url: str = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/course_copilot")
+    # Database - Railway injects DATABASE_URL
+    database_url: str = "postgresql://postgres:password@localhost:5432/course_copilot"
     
     # JWT Authentication
-    jwt_secret: str = os.getenv("JWT_SECRET", "your-super-secret-jwt-key")
-    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
-    access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+    jwt_secret_key: str = "your-super-secret-jwt-key"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 1440
     
     # Gemini API
-    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    gemini_api_key: str = ""
     
     # CORS
-    frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    frontend_url: str = "http://localhost:5173"
     
     # File Upload
-    upload_dir: str = os.getenv("UPLOAD_DIR", "./uploads")
+    upload_dir: str = "./uploads"
     max_file_size: int = 10 * 1024 * 1024  # 10MB
     
     # Debug
-    debug: bool = os.getenv("DEBUG", "false").lower() == "true"
+    debug: bool = False
     
     class Config:
         env_file = ".env"
+        case_sensitive = False
+        extra = "ignore"
 
 
 @lru_cache()
