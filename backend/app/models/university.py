@@ -1,5 +1,5 @@
 """University model for institution management."""
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -27,7 +27,3 @@ class University(Base):
 
     def __repr__(self):
         return f"<University(id={self.id}, name={self.name})>"
-
-
-# Need to add Boolean import
-from sqlalchemy import Boolean
