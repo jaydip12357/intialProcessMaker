@@ -3,8 +3,10 @@ FROM nginx:alpine
 # Copy the static HTML file
 COPY index.html /usr/share/nginx/html/index.html
 
-# Copy nginx config as a template (nginx will substitute $PORT at runtime)
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port (Railway will provide PORT env var)
+# Expose port 80
 EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
