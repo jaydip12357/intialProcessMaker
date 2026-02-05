@@ -1,66 +1,48 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Numeric, JSON
+"""Course model for university course catalog."""
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float, Enum, Boolean
 from sqlalchemy.orm import relationship
-from datetime import datetime
-
+from sqlalchemy.sql import func
+import enum
 from app.database import Base
 
 
-class ExtractedCourse(Base):
-    __tablename__ = "extracted_courses"
+class CourseLevel(str, enum.Enum):
+    """Course level enumeration."""
+    UNDERGRADUATE = "undergraduate"
+    GRADUATE = "graduate"
+    DOCTORAL = "doctoral"
+
+
+class Course(Base):
+    """Course model for university course catalog."""
+    __tablename__ = "courses"
 
     id = Column(Integer, primary_key=True, index=True)
-    submission_id = Column(Integer, ForeignKey("submissions.id"), nullable=False)
-    course_code = Column(String(50))
-    course_name = Column(String(255))
-    credits = Column(Numeric(3, 1))
-    grade = Column(String(10))
-    source_university = Column(String(255))
-    syllabus_file_path = Column(String(500))
-    syllabus_filename = Column(String(255))
-    course_description = Column(Text)
-    learning_outcomes = Column(Text)
-    extracted_data = Column(JSON)  # Full Gemini extraction
-    created_at = Column(DateTime, default=datetime.utcnow)
+    university_id = Column(Integer, ForeignKey("universities.id"), nullable=False)
+    professor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Course Information
+    code = Column(String(50), nullable=False, index=True)  # e.g., "CS101"
+    name = Column(String(255), nullable=False)
+    department = Column(String(100), nullable=True)
+    credits = Column(Float, nullable=False, default=3.0)
+    level = Column(Enum(CourseLevel), default=CourseLevel.UNDERGRADUATE)
+    
+    # Course Content
+    description = Column(Text, nullable=True)
+    learning_outcomes = Column(Text, nullable=True)
+    prerequisites = Column(Text, nullable=True)
+    syllabus_file_path = Column(String(500), nullable=True)
+    
+    # Metadata
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    submission = relationship("Submission", back_populates="extracted_courses")
-    matches = relationship("CourseMatch", back_populates="extracted_course", cascade="all, delete-orphan")
-    evaluation = relationship("Evaluation", back_populates="extracted_course", uselist=False)
-
-
-class TargetCourse(Base):
-    __tablename__ = "target_courses"
-
-    id = Column(Integer, primary_key=True, index=True)
-    course_code = Column(String(50), unique=True, nullable=False, index=True)
-    course_name = Column(String(255), nullable=False)
-    department = Column(String(100))
-    credits = Column(Numeric(3, 1))
-    description = Column(Text)
-    prerequisites = Column(Text)
-    learning_outcomes = Column(Text)
-    course_level = Column(String(50))  # 'undergraduate', 'graduate'
-    is_active = Column(Integer, default=1)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
+    university = relationship("University", back_populates="courses")
+    professor = relationship("User", back_populates="courses")
     matches = relationship("CourseMatch", back_populates="target_course")
-    evaluations = relationship("Evaluation", back_populates="approved_target_course")
 
-
-class CourseMatch(Base):
-    __tablename__ = "course_matches"
-
-    id = Column(Integer, primary_key=True, index=True)
-    extracted_course_id = Column(Integer, ForeignKey("extracted_courses.id"), nullable=False)
-    target_course_id = Column(Integer, ForeignKey("target_courses.id"), nullable=False)
-    similarity_score = Column(Numeric(5, 2))  # 0-100
-    match_explanation = Column(Text)
-    match_rank = Column(Integer)  # 1, 2, 3 for top 3
-    gemini_reasoning = Column(JSON)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    # Relationships
-    extracted_course = relationship("ExtractedCourse", back_populates="matches")
-    target_course = relationship("TargetCourse", back_populates="matches")
+    def __repr__(self):
+        return f"<Course(id={self.id}, code={self.code}, name={self.name})>"

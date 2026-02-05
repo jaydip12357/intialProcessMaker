@@ -1,190 +1,204 @@
-import json
-import re
-from typing import Optional
+"""Gemini AI service for course matching and analysis."""
 import google.generativeai as genai
-from app.config import settings
+import json
+from typing import List, Dict, Any, Optional
+from app.config import get_settings
+
+settings = get_settings()
 
 
 class GeminiService:
+    """Service for interacting with Google Gemini API."""
+    
     def __init__(self):
-        if settings.GEMINI_API_KEY:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
+        """Initialize Gemini client."""
+        if settings.gemini_api_key:
+            genai.configure(api_key=settings.gemini_api_key)
             self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
         else:
             self.model = None
-
-    def _parse_json_response(self, response_text: str) -> dict | list:
-        """Extract JSON from Gemini response"""
-        # Try to find JSON in code blocks
-        json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', response_text)
-        if json_match:
-            return json.loads(json_match.group(1))
-
-        # Try to parse the entire response as JSON
-        try:
-            return json.loads(response_text)
-        except json.JSONDecodeError:
-            # Try to find JSON array or object
-            array_match = re.search(r'\[[\s\S]*\]', response_text)
-            if array_match:
-                return json.loads(array_match.group())
-
-            obj_match = re.search(r'\{[\s\S]*\}', response_text)
-            if obj_match:
-                return json.loads(obj_match.group())
-
-        raise ValueError("Could not parse JSON from response")
-
-    async def extract_transcript_data(self, pdf_text: str) -> list[dict]:
-        """Extract structured course data from transcript text"""
-        if not self.model:
-            return self._mock_transcript_extraction()
-
-        prompt = f"""
-        Extract all courses from this university transcript.
-        For each course, provide:
-        - course_code (the course identifier, e.g., "CS 101", "MATH 200")
-        - course_name (full course title)
-        - credits (number of credit hours as a decimal)
-        - grade (letter grade if available, or "N/A")
-        - university_name (the name of the institution)
-
-        Return ONLY a JSON array with no additional text. Example format:
-        [
-            {{"course_code": "CS 101", "course_name": "Introduction to Computer Science", "credits": 3.0, "grade": "A", "university_name": "Sample University"}}
-        ]
-
-        Transcript:
-        {pdf_text}
-        """
-
-        try:
-            response = self.model.generate_content(prompt)
-            return self._parse_json_response(response.text)
-        except Exception as e:
-            print(f"Gemini extraction error: {e}")
-            return []
-
-    async def extract_course_details(self, syllabus_text: str) -> dict:
-        """Extract detailed course information from syllabus"""
-        if not self.model:
-            return self._mock_syllabus_extraction()
-
-        prompt = f"""
-        Extract the following from this course syllabus:
-        - course_description (concise summary, 2-3 sentences)
-        - learning_outcomes (list of strings)
-        - main_topics (list of main topics covered)
-        - textbooks (list of required/recommended books)
-        - assessment_methods (list of assessment types like "exams", "homework", "projects")
-
-        Return ONLY a JSON object with no additional text. Example format:
-        {{
-            "course_description": "This course covers...",
-            "learning_outcomes": ["Outcome 1", "Outcome 2"],
-            "main_topics": ["Topic 1", "Topic 2"],
-            "textbooks": ["Book 1", "Book 2"],
-            "assessment_methods": ["Exams", "Projects"]
-        }}
-
-        Syllabus:
-        {syllabus_text}
-        """
-
-        try:
-            response = self.model.generate_content(prompt)
-            return self._parse_json_response(response.text)
-        except Exception as e:
-            print(f"Gemini syllabus extraction error: {e}")
-            return {}
-
-    async def find_similar_courses(
+    
+    async def analyze_course_matches(
         self,
-        source_course: dict,
-        target_courses: list[dict],
-        top_n: int = 3
-    ) -> list[dict]:
-        """Find top N most similar target courses"""
-        if not self.model or not target_courses:
-            return []
-
-        # Format target courses for the prompt
-        target_list = "\n".join([
-            f"ID: {tc['id']}, Code: {tc['course_code']}, Name: {tc['course_name']}, "
-            f"Credits: {tc['credits']}, Description: {tc.get('description', 'N/A')}"
-            for tc in target_courses
-        ])
-
-        prompt = f"""
-        Compare this source course against the target courses and find the {top_n} best matches.
-
-        Source Course:
-        - Code: {source_course.get('course_code', 'N/A')}
-        - Name: {source_course.get('course_name', 'N/A')}
-        - Credits: {source_course.get('credits', 'N/A')}
-        - Description: {source_course.get('course_description', 'N/A')}
-        - Learning Outcomes: {source_course.get('learning_outcomes', 'N/A')}
-
-        Target Courses:
-        {target_list}
-
-        Return ONLY a JSON array of the top {top_n} matches with:
-        - target_course_id (the ID number)
-        - similarity_score (0-100, based on content alignment)
-        - explanation (brief explanation of why they match)
-        - key_similarities (list of 2-3 similar aspects)
-        - important_differences (list of any notable differences)
-
-        Example format:
-        [
-            {{
-                "target_course_id": 1,
-                "similarity_score": 85,
-                "explanation": "Both courses cover similar topics...",
-                "key_similarities": ["Data structures", "Algorithms"],
-                "important_differences": ["Source covers more theory"]
-            }}
-        ]
-
-        Rank by similarity score, highest first.
+        transfer_course: Dict[str, Any],
+        target_courses: List[Dict[str, Any]],
+        top_n: int = 5
+    ) -> List[Dict[str, Any]]:
         """
+        Analyze and rank course matches using Gemini AI.
+        
+        Args:
+            transfer_course: The student's transfer course info
+            target_courses: List of target university courses
+            top_n: Number of top matches to return
+            
+        Returns:
+            List of matched courses with scores and explanations
+        """
+        if not self.model:
+            # Return mock data if no API key
+            return self._generate_mock_matches(target_courses, top_n)
+        
+        # Build prompt
+        prompt = self._build_matching_prompt(transfer_course, target_courses)
+        
+        try:
+            response = self.model.generate_content(prompt)
+            result = self._parse_matching_response(response.text)
+            return result[:top_n]
+        except Exception as e:
+            print(f"Gemini API error: {e}")
+            return self._generate_mock_matches(target_courses, top_n)
+    
+    def _build_matching_prompt(
+        self,
+        transfer_course: Dict[str, Any],
+        target_courses: List[Dict[str, Any]]
+    ) -> str:
+        """Build the prompt for course matching."""
+        # Format target courses
+        target_list = ""
+        for i, course in enumerate(target_courses):
+            target_list += f"""
+Course {i + 1}:
+- ID: {course.get('id')}
+- Code: {course.get('code', 'N/A')}
+- Name: {course.get('name', 'N/A')}
+- Credits: {course.get('credits', 'N/A')}
+- Department: {course.get('department', 'N/A')}
+- Description: {course.get('description', 'N/A')[:500] if course.get('description') else 'N/A'}
+- Learning Outcomes: {course.get('learning_outcomes', 'N/A')[:300] if course.get('learning_outcomes') else 'N/A'}
+"""
+        
+        prompt = f"""You are a university course evaluator. Compare the following transfer course 
+with the target university's courses and provide the top 5 matches.
+
+TRANSFER COURSE:
+- Code: {transfer_course.get('course_code', 'N/A')}
+- Name: {transfer_course.get('course_name', 'N/A')}
+- Credits: {transfer_course.get('credits', 'N/A')}
+- Source University: {transfer_course.get('source_university_name', 'N/A')}
+- Description/Syllabus Content: {transfer_course.get('syllabus_text', 'N/A')[:1000] if transfer_course.get('syllabus_text') else 'N/A'}
+- Additional Notes: {transfer_course.get('additional_notes', 'N/A')}
+
+TARGET UNIVERSITY COURSES:
+{target_list}
+
+For each match, provide:
+1. Similarity score (0-100%)
+2. Explanation of similarities
+3. Key similarities (as a list)
+4. Key differences (as a list)
+5. Recommendation
+
+IMPORTANT: Return your response as a valid JSON array with the following structure:
+{{
+  "matches": [
+    {{
+      "target_course_id": <integer>,
+      "similarity_score": <number 0-100>,
+      "explanation": "<string>",
+      "key_similarities": ["<string>", ...],
+      "key_differences": ["<string>", ...],
+      "recommendation": "<string>"
+    }}
+  ]
+}}
+
+Return only the JSON, no additional text."""
+
+        return prompt
+    
+    def _parse_matching_response(self, response_text: str) -> List[Dict[str, Any]]:
+        """Parse the Gemini response into structured match data."""
+        try:
+            # Clean up response text
+            text = response_text.strip()
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
+            
+            data = json.loads(text)
+            matches = data.get("matches", [])
+            
+            # Add ranking
+            for i, match in enumerate(matches):
+                match["rank"] = i + 1
+                match["key_similarities"] = json.dumps(match.get("key_similarities", []))
+                match["key_differences"] = json.dumps(match.get("key_differences", []))
+            
+            return matches
+            
+        except json.JSONDecodeError as e:
+            print(f"JSON parse error: {e}")
+            return []
+    
+    def _generate_mock_matches(
+        self,
+        target_courses: List[Dict[str, Any]],
+        top_n: int
+    ) -> List[Dict[str, Any]]:
+        """Generate mock matches when API is unavailable."""
+        mock_matches = []
+        for i, course in enumerate(target_courses[:top_n]):
+            mock_matches.append({
+                "target_course_id": course.get("id"),
+                "similarity_score": max(95 - (i * 10), 50),
+                "explanation": f"This course appears to cover similar topics based on the course name and description.",
+                "key_similarities": json.dumps(["Subject area", "Credit hours", "Course level"]),
+                "key_differences": json.dumps(["Specific topics may vary", "Different prerequisites"]),
+                "recommendation": "Manual review recommended to confirm equivalency.",
+                "rank": i + 1
+            })
+        return mock_matches
+    
+    async def extract_transcript_courses(self, transcript_text: str) -> List[Dict[str, Any]]:
+        """Extract course information from transcript text."""
+        if not self.model:
+            return []
+        
+        prompt = f"""Extract all courses from this transcript text. For each course, identify:
+- Course code (e.g., "CS101")
+- Course name
+- Credits
+- Grade (if available)
+
+Transcript text:
+{transcript_text[:5000]}
+
+Return as a JSON array:
+{{
+  "courses": [
+    {{
+      "course_code": "<string>",
+      "course_name": "<string>",
+      "credits": <number or null>,
+      "grade": "<string or null>"
+    }}
+  ]
+}}
+
+Return only the JSON, no additional text."""
 
         try:
             response = self.model.generate_content(prompt)
-            matches = self._parse_json_response(response.text)
-            return matches[:top_n]
+            text = response.text.strip()
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            
+            data = json.loads(text.strip())
+            return data.get("courses", [])
         except Exception as e:
-            print(f"Gemini matching error: {e}")
+            print(f"Transcript extraction error: {e}")
             return []
-
-    def _mock_transcript_extraction(self) -> list[dict]:
-        """Mock data for testing without API key"""
-        return [
-            {
-                "course_code": "CS 101",
-                "course_name": "Introduction to Computer Science",
-                "credits": 3.0,
-                "grade": "A",
-                "university_name": "Sample University"
-            },
-            {
-                "course_code": "MATH 201",
-                "course_name": "Calculus I",
-                "credits": 4.0,
-                "grade": "B+",
-                "university_name": "Sample University"
-            }
-        ]
-
-    def _mock_syllabus_extraction(self) -> dict:
-        """Mock data for testing without API key"""
-        return {
-            "course_description": "This course provides an introduction to the field.",
-            "learning_outcomes": ["Understand core concepts", "Apply theoretical knowledge"],
-            "main_topics": ["Topic 1", "Topic 2", "Topic 3"],
-            "textbooks": ["Required Textbook"],
-            "assessment_methods": ["Exams", "Homework", "Projects"]
-        }
 
 
 # Singleton instance

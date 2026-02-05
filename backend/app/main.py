@@ -1,79 +1,66 @@
+"""FastAPI main application entry point."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+from fastapi.staticfiles import StaticFiles
+import os
 
-from app.config import settings
+from app.config import get_settings
 from app.database import init_db
-from app.routers import auth, students, uploads, evaluations, admin
+from app.routers import auth, students, universities, courses, matching, evaluations, admin
 
+settings = get_settings()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan - startup and shutdown events"""
-    # Startup
-    print("Starting Course Copilot API...")
-    init_db()
-    print("Database initialized")
-    yield
-    # Shutdown
-    print("Shutting down Course Copilot API...")
-
-
+# Create FastAPI application
 app = FastAPI(
-    title=settings.APP_NAME,
-    description="Transfer Credit Evaluation Platform - Automates university transfer credit evaluation using AI",
+    title="Course Copilot API",
+    description="Two-sided transfer credit evaluation platform",
     version="1.0.0",
-    lifespan=lifespan
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
 )
 
-# CORS configuration
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        settings.FRONTEND_URL,
+        settings.frontend_url,
+        "http://localhost:5173",
         "http://localhost:3000",
-        "http://localhost:5173",  # Vite dev server
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Create uploads directory if it doesn't exist
+os.makedirs(settings.upload_dir, exist_ok=True)
+
+# Mount static files for uploads
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+
 # Include routers
-app.include_router(auth.router)
-app.include_router(students.router)
-app.include_router(uploads.router)
-app.include_router(evaluations.router)
-app.include_router(admin.router)
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(students.router, prefix="/api/student", tags=["Student Portal"])
+app.include_router(universities.router, prefix="/api/universities", tags=["Universities"])
+app.include_router(courses.router, prefix="/api/courses", tags=["Courses"])
+app.include_router(matching.router, prefix="/api/match", tags=["AI Matching"])
+app.include_router(evaluations.router, prefix="/api/evaluations", tags=["Evaluations"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 
-@app.get("/")
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup."""
+    init_db()
+
+
+@app.get("/", tags=["Health"])
 async def root():
-    """Root endpoint"""
-    return {
-        "name": settings.APP_NAME,
-        "version": "1.0.0",
-        "status": "running"
-    }
+    """Root endpoint for health check."""
+    return {"message": "Course Copilot API is running", "version": "1.0.0"}
 
 
-@app.get("/health")
+@app.get("/api/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint for Railway"""
-    return {"status": "healthy"}
-
-
-@app.get("/api/info")
-async def api_info():
-    """API information endpoint"""
-    return {
-        "name": settings.APP_NAME,
-        "description": "Transfer Credit Evaluation Platform API",
-        "version": "1.0.0",
-        "endpoints": {
-            "auth": "/api/auth",
-            "student": "/api/student",
-            "evaluator": "/api/evaluator",
-            "admin": "/api/admin"
-        }
-    }
+    """Health check endpoint."""
+    return {"status": "healthy", "service": "course-copilot-api"}

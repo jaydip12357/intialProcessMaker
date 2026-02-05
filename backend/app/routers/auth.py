@@ -1,7 +1,10 @@
+"""Authentication router for login, register, and user management."""
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from datetime import timedelta
 
 from app.database import get_db
 from app.models.user import User, UserRole
@@ -9,19 +12,23 @@ from app.utils.auth import (
     get_password_hash,
     verify_password,
     create_access_token,
-    get_current_user
+    get_current_user,
+    get_current_active_user
 )
+from app.config import get_settings
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+router = APIRouter()
+settings = get_settings()
 
 
 # Pydantic schemas
-class UserRegister(BaseModel):
+class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: str
+    last_name: str
     role: Optional[UserRole] = UserRole.STUDENT
+    university_id: Optional[int] = None
 
 
 class UserLogin(BaseModel):
@@ -32,9 +39,12 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
-    role: str
-    first_name: Optional[str]
-    last_name: Optional[str]
+    first_name: str
+    last_name: str
+    role: UserRole
+    university_id: Optional[int]
+    is_verified: bool
+    is_active: bool
 
     class Config:
         from_attributes = True
@@ -42,19 +52,19 @@ class UserResponse(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str
     user: UserResponse
 
 
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    password: Optional[str] = None
+    university_id: Optional[int] = None
 
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    """Register a new user"""
+@router.post("/register", response_model=TokenResponse)
+async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Register a new user account."""
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
@@ -62,99 +72,91 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-
+    
     # Create new user
     user = User(
         email=user_data.email,
         password_hash=get_password_hash(user_data.password),
-        role=user_data.role,
         first_name=user_data.first_name,
-        last_name=user_data.last_name
+        last_name=user_data.last_name,
+        role=user_data.role,
+        university_id=user_data.university_id
     )
+    
     db.add(user)
     db.commit()
     db.refresh(user)
-
+    
     # Create access token
-    access_token = create_access_token(data={"sub": str(user.id)})
-
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+        expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
+    )
+    
     return TokenResponse(
         access_token=access_token,
-        user=UserResponse(
-            id=user.id,
-            email=user.email,
-            role=user.role.value,
-            first_name=user.first_name,
-            last_name=user.last_name
-        )
+        token_type="bearer",
+        user=UserResponse.model_validate(user)
     )
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(user_data: UserLogin, db: Session = Depends(get_db)):
-    """Login and get access token"""
-    user = db.query(User).filter(User.email == user_data.email).first()
-
-    if not user or not verify_password(user_data.password, user.password_hash):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Login with email and password."""
+    user = db.query(User).filter(User.email == form_data.username).first()
+    
+    if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    access_token = create_access_token(data={"sub": str(user.id)})
-
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is disabled"
+        )
+    
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+        expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
+    )
+    
     return TokenResponse(
         access_token=access_token,
-        user=UserResponse(
-            id=user.id,
-            email=user.email,
-            role=user.role.value,
-            first_name=user.first_name,
-            last_name=user.last_name
-        )
-    )
-
-
-@router.get("/me", response_model=UserResponse)
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """Get current user information"""
-    return UserResponse(
-        id=current_user.id,
-        email=current_user.email,
-        role=current_user.role.value,
-        first_name=current_user.first_name,
-        last_name=current_user.last_name
-    )
-
-
-@router.put("/me", response_model=UserResponse)
-async def update_current_user(
-    user_data: UserUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Update current user information"""
-    if user_data.first_name is not None:
-        current_user.first_name = user_data.first_name
-    if user_data.last_name is not None:
-        current_user.last_name = user_data.last_name
-    if user_data.password is not None:
-        current_user.password_hash = get_password_hash(user_data.password)
-
-    db.commit()
-    db.refresh(current_user)
-
-    return UserResponse(
-        id=current_user.id,
-        email=current_user.email,
-        role=current_user.role.value,
-        first_name=current_user.first_name,
-        last_name=current_user.last_name
+        token_type="bearer",
+        user=UserResponse.model_validate(user)
     )
 
 
 @router.post("/logout")
-async def logout():
-    """Logout (client should discard token)"""
+async def logout(current_user: User = Depends(get_current_active_user)):
+    """Logout the current user (client should discard the token)."""
     return {"message": "Successfully logged out"}
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_active_user)):
+    """Get the current user's profile."""
+    return UserResponse.model_validate(current_user)
+
+
+@router.put("/me", response_model=UserResponse)
+async def update_me(
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update the current user's profile."""
+    if user_data.first_name:
+        current_user.first_name = user_data.first_name
+    if user_data.last_name:
+        current_user.last_name = user_data.last_name
+    if user_data.university_id is not None:
+        current_user.university_id = user_data.university_id
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    return UserResponse.model_validate(current_user)

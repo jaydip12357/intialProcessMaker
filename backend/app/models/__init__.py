@@ -1,13 +1,6 @@
+# Models package
 from app.models.user import User
-from app.models.submission import Submission
-from app.models.course import ExtractedCourse, TargetCourse, CourseMatch
+from app.models.university import University
+from app.models.course import Course
+from app.models.submission import StudentSubmission, TransferCourse, CourseMatch
 from app.models.evaluation import Evaluation
-
-__all__ = [
-    "User",
-    "Submission",
-    "ExtractedCourse",
-    "TargetCourse",
-    "CourseMatch",
-    "Evaluation"
-]

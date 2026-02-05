@@ -1,85 +1,93 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { authApi } from '../services/api'
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
-const AuthContext = createContext(null)
+const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      setLoading(false)
-      return
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
     }
+    return context;
+};
 
-    try {
-      const response = await authApi.me()
-      setUser(response.data)
-    } catch (err) {
-      localStorage.removeItem('token')
-    } finally {
-      setLoading(false)
-    }
-  }
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [loading, setLoading] = useState(true);
 
-  const login = async (email, password) => {
-    setError(null)
-    try {
-      const response = await authApi.login({ email, password })
-      const { access_token, user } = response.data
-      localStorage.setItem('token', access_token)
-      setUser(user)
-      return user
-    } catch (err) {
-      const message = err.response?.data?.detail || 'Login failed'
-      setError(message)
-      throw new Error(message)
-    }
-  }
+    useEffect(() => {
+        const loadUser = async () => {
+            if (token) {
+                try {
+                    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                    const response = await api.get('/api/auth/me');
+                    setUser(response.data);
+                } catch (error) {
+                    console.error('Failed to load user:', error);
+                    logout();
+                }
+            }
+            setLoading(false);
+        };
 
-  const register = async (userData) => {
-    setError(null)
-    try {
-      const response = await authApi.register(userData)
-      const { access_token, user } = response.data
-      localStorage.setItem('token', access_token)
-      setUser(user)
-      return user
-    } catch (err) {
-      const message = err.response?.data?.detail || 'Registration failed'
-      setError(message)
-      throw new Error(message)
-    }
-  }
+        loadUser();
+    }, [token]);
 
-  const logout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-  }
+    const login = async (email, password) => {
+        const formData = new URLSearchParams();
+        formData.append('username', email);
+        formData.append('password', password);
 
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-  }
+        const response = await api.post('/api/auth/login', formData, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+        const { access_token, user: userData } = response.data;
+        localStorage.setItem('token', access_token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        setToken(access_token);
+        setUser(userData);
+        return userData;
+    };
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+    const register = async (userData) => {
+        const response = await api.post('/api/auth/register', userData);
+        const { access_token, user: newUser } = response.data;
+        localStorage.setItem('token', access_token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        setToken(access_token);
+        setUser(newUser);
+        return newUser;
+    };
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        delete api.defaults.headers.common['Authorization'];
+        setToken(null);
+        setUser(null);
+    };
+
+    const value = {
+        user,
+        token,
+        loading,
+        login,
+        register,
+        logout,
+        isAuthenticated: !!user,
+        isStudent: user?.role === 'student',
+        isProfessor: user?.role === 'professor',
+        isUniversityAdmin: user?.role === 'university_admin',
+        isEvaluator: user?.role === 'evaluator',
+        isSystemAdmin: user?.role === 'system_admin',
+    };
+
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
+export default AuthContext;
