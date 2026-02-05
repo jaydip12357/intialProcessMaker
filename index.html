@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Copilot - Transfer Credit Evaluation</title>
+    <title>Course Copilot - AI-Powered Transfer Credit Evaluation</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -16,612 +16,222 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
         .card {
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        }
+
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
+            }
         }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-slate-950 min-h-screen text-white">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 gradient-bg rounded-lg"></div>
-                <span class="text-xl font-bold text-gray-900">Course Copilot</span>
+    <nav class="fixed w-full z-50 glass">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3">
+                <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center pulse-glow">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                        </path>
+                    </svg>
+                </div>
+                <span class="text-2xl font-bold">Course Copilot</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-white font-medium hover:text-indigo-300 transition">Home</a>
+                <a href="student.html" class="text-gray-300 hover:text-white transition">Students</a>
+                <a href="professor.html" class="text-gray-300 hover:text-white transition">Professors</a>
+                <a href="university.html" class="text-gray-300 hover:text-white transition">Universities</a>
             </div>
             <div class="flex items-center space-x-4">
-                <span class="text-gray-600">Demo Mode</span>
-                <button onclick="showLogin()"
-                    class="px-4 py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg">Login</button>
-                <button onclick="showRegister()"
-                    class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">Get
-                    Started</button>
+                <a href="login.html"
+                    class="px-5 py-2.5 text-indigo-300 font-medium hover:text-white transition">Login</a>
+                <a href="register.html"
+                    class="px-6 py-2.5 gradient-bg text-white font-semibold rounded-xl hover:opacity-90 transition shadow-lg shadow-indigo-500/30">Get
+                    Started</a>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div id="main-content">
-        <!-- Hero Section -->
-        <section class="gradient-bg text-white py-20">
-            <div class="max-w-4xl mx-auto text-center px-4">
-                <h1 class="text-5xl font-bold mb-6">Transfer Credits Made Simple</h1>
-                <p class="text-xl opacity-90 mb-8">AI-powered course matching for seamless credit transfers between
-                    universities</p>
-                <div class="flex justify-center space-x-4">
-                    <button onclick="showStudentDashboard()"
-                        class="px-8 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100">I'm a
-                        Student</button>
-                    <button onclick="showUniversityDashboard()"
-                        class="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10">I'm
-                        from a University</button>
-                </div>
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-6 relative overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden">
+            <div
+                class="absolute top-20 left-10 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 float">
             </div>
-        </section>
-
-        <!-- How It Works -->
-        <section class="py-16 bg-white">
-            <div class="max-w-6xl mx-auto px-4">
-                <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div class="text-center p-6">
-                        <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-2xl text-white">1</span>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-2">Upload Documents</h3>
-                        <p class="text-gray-600">Submit your transcript and course syllabi</p>
-                    </div>
-                    <div class="text-center p-6">
-                        <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-2xl text-white">2</span>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-2">AI Analysis</h3>
-                        <p class="text-gray-600">Our AI matches your courses with equivalents</p>
-                    </div>
-                    <div class="text-center p-6">
-                        <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-2xl text-white">3</span>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-2">Get Results</h3>
-                        <p class="text-gray-600">Receive instant recommendations and decisions</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Student Dashboard (hidden by default) -->
-    <div id="student-dashboard" class="hidden">
-        <div class="max-w-6xl mx-auto px-4 py-8">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Student Dashboard</h1>
-                    <p class="text-gray-600">Manage your transfer credit requests</p>
-                </div>
-                <button onclick="showNewSubmission()"
-                    class="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">+ New
-                    Request</button>
-            </div>
-
-            <!-- Stats -->
-            <div class="grid md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-sm border p-6 card">
-                    <p class="text-gray-600 text-sm">Total Submissions</p>
-                    <p class="text-3xl font-bold text-gray-900">3</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border p-6 card">
-                    <p class="text-gray-600 text-sm">Pending Review</p>
-                    <p class="text-3xl font-bold text-amber-600">1</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border p-6 card">
-                    <p class="text-gray-600 text-sm">Approved</p>
-                    <p class="text-3xl font-bold text-emerald-600">2</p>
-                </div>
-            </div>
-
-            <!-- Submissions List -->
-            <div class="bg-white rounded-xl shadow-sm border">
-                <div class="p-6 border-b">
-                    <h2 class="text-xl font-semibold">Your Submissions</h2>
-                </div>
-                <div class="divide-y">
-                    <div class="p-6 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
-                        onclick="showSubmissionDetail()">
-                        <div>
-                            <p class="font-medium text-gray-900">Duke University Transfer Request</p>
-                            <p class="text-sm text-gray-600">3 courses • Submitted Jan 15, 2026</p>
-                        </div>
-                        <span
-                            class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">Pending</span>
-                    </div>
-                    <div class="p-6 flex items-center justify-between hover:bg-gray-50">
-                        <div>
-                            <p class="font-medium text-gray-900">Stanford University Transfer</p>
-                            <p class="text-sm text-gray-600">2 courses • Submitted Dec 10, 2025</p>
-                        </div>
-                        <span
-                            class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">Approved</span>
-                    </div>
-                </div>
-            </div>
+            <div class="absolute top-40 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 float"
+                style="animation-delay: -2s;"></div>
+            <div class="absolute bottom-20 left-1/2 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 float"
+                style="animation-delay: -4s;"></div>
         </div>
-    </div>
-
-    <!-- New Submission Form (hidden by default) -->
-    <div id="new-submission" class="hidden">
-        <div class="max-w-3xl mx-auto px-4 py-8">
-            <button onclick="showStudentDashboard()" class="text-indigo-600 mb-4 flex items-center">← Back to
-                Dashboard</button>
-
-            <div class="bg-white rounded-xl shadow-sm border p-8">
-                <h1 class="text-2xl font-bold text-gray-900 mb-6">New Transfer Credit Request</h1>
-
-                <!-- Step Indicator -->
-                <div class="flex items-center mb-8">
-                    <div class="flex items-center">
-                        <div
-                            class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                            1</div>
-                        <span class="ml-2 font-medium text-indigo-600">University</span>
-                    </div>
-                    <div class="flex-1 h-1 bg-gray-200 mx-4"></div>
-                    <div class="flex items-center">
-                        <div
-                            class="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm">
-                            2</div>
-                        <span class="ml-2 text-gray-600">Documents</span>
-                    </div>
-                    <div class="flex-1 h-1 bg-gray-200 mx-4"></div>
-                    <div class="flex items-center">
-                        <div
-                            class="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm">
-                            3</div>
-                        <span class="ml-2 text-gray-600">Courses</span>
-                    </div>
-                </div>
-
-                <!-- Form -->
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Target University</label>
-                        <select
-                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option>Select a university...</option>
-                            <option>Duke University</option>
-                            <option>Stanford University</option>
-                            <option>MIT</option>
-                            <option>UC Berkeley</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Transcript (PDF)</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-500 cursor-pointer"
-                            onclick="simulateUpload('transcript')">
-                            <div id="transcript-upload" class="text-gray-500">
-                                <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                <p>Click to upload or drag and drop</p>
-                                <p class="text-sm">PDF up to 10MB</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Syllabus (PDF)</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-500 cursor-pointer"
-                            onclick="simulateUpload('syllabus')">
-                            <div id="syllabus-upload" class="text-gray-500">
-                                <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                <p>Click to upload or drag and drop</p>
-                                <p class="text-sm">PDF up to 10MB</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex space-x-4 pt-4">
-                        <button onclick="showStudentDashboard()"
-                            class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50">Cancel</button>
-                        <button onclick="showSubmissionDetail()"
-                            class="flex-1 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">Submit
-                            Request</button>
-                    </div>
-                </div>
+        <div class="max-w-6xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center px-4 py-2 glass rounded-full text-sm text-indigo-300 mb-8">
+                <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                Trusted by 50+ Universities
             </div>
-        </div>
-    </div>
-
-    <!-- Submission Detail (hidden by default) -->
-    <div id="submission-detail" class="hidden">
-        <div class="max-w-4xl mx-auto px-4 py-8">
-            <button onclick="showStudentDashboard()" class="text-indigo-600 mb-4 flex items-center">← Back to
-                Dashboard</button>
-
-            <div class="bg-white rounded-xl shadow-sm border p-8 mb-6">
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Duke University Transfer Request</h1>
-                        <p class="text-gray-600">Submitted January 15, 2026</p>
-                    </div>
-                    <span class="px-4 py-2 bg-amber-100 text-amber-700 rounded-full font-medium">Pending Review</span>
-                </div>
-
-                <button onclick="showMatchResults()"
-                    class="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:opacity-90 flex items-center justify-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <h1 class="text-6xl md:text-7xl font-extrabold mb-6 leading-tight">
+                Transfer Credits<br><span class="gradient-text">Made Simple</span>
+            </h1>
+            <p class="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+                AI-powered course matching that analyzes syllabi, learning outcomes, and credits for seamless university
+                transfers
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="student.html"
+                    class="px-8 py-4 gradient-bg text-white font-semibold rounded-xl hover:opacity-90 transition shadow-xl shadow-indigo-500/30 flex items-center justify-center">
+                    <span>I'm a Student</span>
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                     </svg>
-                    Run AI Analysis
-                </button>
-            </div>
-
-            <!-- Courses -->
-            <div class="bg-white rounded-xl shadow-sm border">
-                <div class="p-6 border-b">
-                    <h2 class="text-xl font-semibold">Submitted Courses</h2>
-                </div>
-                <div class="divide-y">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded mr-2">CS101</span>
-                                <span class="font-medium">Introduction to Computer Science</span>
-                            </div>
-                            <span class="text-gray-600">3 credits</span>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded mr-2">MATH201</span>
-                                <span class="font-medium">Calculus II</span>
-                            </div>
-                            <span class="text-gray-600">4 credits</span>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded mr-2">PHYS101</span>
-                                <span class="font-medium">Physics I</span>
-                            </div>
-                            <span class="text-gray-600">4 credits</span>
-                        </div>
-                    </div>
-                </div>
+                </a>
+                <a href="professor.html"
+                    class="px-8 py-4 glass text-white font-semibold rounded-xl hover:bg-white/10 transition flex items-center justify-center">
+                    <span>I'm a Professor</span>
+                </a>
+                <a href="university.html"
+                    class="px-8 py-4 glass text-white font-semibold rounded-xl hover:bg-white/10 transition flex items-center justify-center">
+                    <span>University Admin</span>
+                </a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Match Results (hidden by default) -->
-    <div id="match-results" class="hidden">
-        <div class="max-w-4xl mx-auto px-4 py-8">
-            <button onclick="showSubmissionDetail()" class="text-indigo-600 mb-4 flex items-center">← Back to
-                Submission</button>
-
-            <div class="bg-white rounded-xl shadow-sm border p-8 mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">AI Match Results</h1>
-                <p class="text-gray-600">Based on course content and learning outcomes analysis</p>
+    <!-- Stats Section -->
+    <section class="py-16 px-6">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-6">
+            <div class="glass rounded-2xl p-6 text-center card">
+                <p class="text-4xl font-bold gradient-text">50+</p>
+                <p class="text-gray-400 mt-2">Partner Universities</p>
             </div>
-
-            <!-- Match Cards -->
-            <div class="space-y-4">
-                <div class="bg-white rounded-xl shadow-sm border p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Your Course</p>
-                            <p class="font-medium">CS101 - Introduction to Computer Science</p>
-                        </div>
-                        <div class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-bold">92%</div>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-sm text-gray-600 mb-1">Recommended Match</p>
-                        <p class="font-medium text-indigo-600">COMPSCI 101 - Intro to CS at Duke</p>
-                        <p class="text-sm text-gray-600 mt-2">Strong alignment in topics: programming fundamentals, data
-                            structures basics, algorithms introduction.</p>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Your Course</p>
-                            <p class="font-medium">MATH201 - Calculus II</p>
-                        </div>
-                        <div class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-bold">88%</div>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-sm text-gray-600 mb-1">Recommended Match</p>
-                        <p class="font-medium text-indigo-600">MATH 122 - Calculus II at Duke</p>
-                        <p class="text-sm text-gray-600 mt-2">Covers integration techniques, series, and sequences.
-                            Minor differences in application focus.</p>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Your Course</p>
-                            <p class="font-medium">PHYS101 - Physics I</p>
-                        </div>
-                        <div class="px-4 py-2 bg-amber-100 text-amber-700 rounded-full font-bold">75%</div>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-sm text-gray-600 mb-1">Recommended Match</p>
-                        <p class="font-medium text-indigo-600">PHYSICS 141 - General Physics I at Duke</p>
-                        <p class="text-sm text-gray-600 mt-2">Core mechanics topics match. Duke course includes
-                            additional lab component not in source course.</p>
-                    </div>
-                </div>
+            <div class="glass rounded-2xl p-6 text-center card">
+                <p class="text-4xl font-bold gradient-text">10,000+</p>
+                <p class="text-gray-400 mt-2">Courses Analyzed</p>
+            </div>
+            <div class="glass rounded-2xl p-6 text-center card">
+                <p class="text-4xl font-bold gradient-text">95%</p>
+                <p class="text-gray-400 mt-2">Accuracy Rate</p>
+            </div>
+            <div class="glass rounded-2xl p-6 text-center card">
+                <p class="text-4xl font-bold gradient-text">24hrs</p>
+                <p class="text-gray-400 mt-2">Avg Processing</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- University Dashboard (hidden by default) -->
-    <div id="university-dashboard" class="hidden">
-        <div class="max-w-6xl mx-auto px-4 py-8">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">University Dashboard</h1>
-                    <p class="text-gray-600">Manage your course catalog</p>
-                </div>
-                <button onclick="showBulkUpload()"
-                    class="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">Upload
-                    Courses</button>
-            </div>
-
-            <!-- Stats -->
-            <div class="grid md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-sm border p-6 card">
-                    <p class="text-gray-600 text-sm">Total Courses</p>
-                    <p class="text-3xl font-bold text-gray-900">156</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border p-6 card">
-                    <p class="text-gray-600 text-sm">Departments</p>
-                    <p class="text-3xl font-bold text-indigo-600">12</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border p-6 card">
-                    <p class="text-gray-600 text-sm">Pending Reviews</p>
-                    <p class="text-3xl font-bold text-amber-600">8</p>
-                </div>
-            </div>
-
-            <!-- Course Table -->
-            <div class="bg-white rounded-xl shadow-sm border">
-                <div class="p-6 border-b flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Course Catalog</h2>
-                    <input type="text" placeholder="Search courses..." class="px-4 py-2 border rounded-lg w-64">
-                </div>
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b">
-                        <tr>
-                            <th class="text-left px-6 py-4 text-sm font-semibold text-gray-600">Code</th>
-                            <th class="text-left px-6 py-4 text-sm font-semibold text-gray-600">Name</th>
-                            <th class="text-left px-6 py-4 text-sm font-semibold text-gray-600">Department</th>
-                            <th class="text-left px-6 py-4 text-sm font-semibold text-gray-600">Credits</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4"><span
-                                    class="font-mono text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded">CS101</span>
-                            </td>
-                            <td class="px-6 py-4 font-medium">Introduction to Computer Science</td>
-                            <td class="px-6 py-4 text-gray-600">Computer Science</td>
-                            <td class="px-6 py-4 text-gray-600">3</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4"><span
-                                    class="font-mono text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded">MATH122</span>
-                            </td>
-                            <td class="px-6 py-4 font-medium">Calculus II</td>
-                            <td class="px-6 py-4 text-gray-600">Mathematics</td>
-                            <td class="px-6 py-4 text-gray-600">4</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4"><span
-                                    class="font-mono text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded">PHYS141</span>
-                            </td>
-                            <td class="px-6 py-4 font-medium">General Physics I</td>
-                            <td class="px-6 py-4 text-gray-600">Physics</td>
-                            <td class="px-6 py-4 text-gray-600">4</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bulk Upload (hidden by default) -->
-    <div id="bulk-upload" class="hidden">
-        <div class="max-w-2xl mx-auto px-4 py-8">
-            <button onclick="showUniversityDashboard()" class="text-indigo-600 mb-4 flex items-center">← Back to
-                Dashboard</button>
-
-            <div class="bg-white rounded-xl shadow-sm border p-8">
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">Bulk Upload Courses</h1>
-                <p class="text-gray-600 mb-6">Upload your course catalog via CSV or Excel file</p>
-
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                    <p class="font-medium text-gray-700 mb-2">Required Columns:</p>
-                    <code
-                        class="text-sm text-gray-600">course_code, course_name, department, credits, description</code>
-                </div>
-
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-indigo-500 cursor-pointer"
-                    onclick="simulateUpload('catalog')">
-                    <div id="catalog-upload" class="text-gray-500">
-                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+    <!-- How It Works -->
+    <section class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-4">How It Works</h2>
+            <p class="text-gray-400 text-center mb-16 max-w-2xl mx-auto">Three simple steps to get your credits
+                transferred</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass rounded-2xl p-8 card text-center">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
                             </path>
                         </svg>
-                        <p class="text-lg font-medium">Click to upload CSV or Excel file</p>
-                        <p class="text-sm">or drag and drop</p>
                     </div>
+                    <h3 class="text-xl font-semibold mb-3">1. Upload Documents</h3>
+                    <p class="text-gray-400">Submit your transcript and course syllabi in any format</p>
                 </div>
-
-                <button onclick="showUniversityDashboard()"
-                    class="w-full mt-6 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">Upload
-                    Courses</button>
+                <div class="glass rounded-2xl p-8 card text-center">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">2. AI Analysis</h3>
+                    <p class="text-gray-400">Our AI matches courses with target equivalents automatically</p>
+                </div>
+                <div class="glass rounded-2xl p-8 card text-center">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">3. Get Approved</h3>
+                    <p class="text-gray-400">Professors review and approve with one click</p>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Login Modal -->
-    <div id="login-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-2xl p-8 w-full max-w-md mx-4">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Welcome Back</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email"
-                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                        placeholder="you@example.com">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password"
-                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                        placeholder="••••••••">
-                </div>
-                <button onclick="showStudentDashboard(); hideModals();"
-                    class="w-full px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">Sign
-                    In</button>
-                <p class="text-center text-gray-600">Don't have an account? <a href="#" onclick="showRegister()"
-                        class="text-indigo-600 font-medium">Sign up</a></p>
-            </div>
-            <button onclick="hideModals()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">✕</button>
+    <!-- CTA Section -->
+    <section class="py-20 px-6">
+        <div class="max-w-4xl mx-auto glass rounded-3xl p-12 text-center">
+            <h2 class="text-3xl font-bold mb-4">Ready to Transfer Your Credits?</h2>
+            <p class="text-gray-400 mb-8">Join thousands of students who've simplified their transfer process</p>
+            <a href="register.html"
+                class="inline-block px-8 py-4 gradient-bg text-white font-semibold rounded-xl hover:opacity-90 transition shadow-xl shadow-indigo-500/30">
+                Get Started Free
+            </a>
         </div>
-    </div>
+    </section>
 
-    <!-- Register Modal -->
-    <div id="register-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-2xl p-8 w-full max-w-md mx-4 relative">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Create Account</h2>
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                        <input type="text"
-                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                        <input type="text"
-                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email"
-                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                        placeholder="you@example.com">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">I am a...</label>
-                    <select class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option>Student</option>
-                        <option>University Staff</option>
-                        <option>Evaluator</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password"
-                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                        placeholder="••••••••">
-                </div>
-                <button onclick="showStudentDashboard(); hideModals();"
-                    class="w-full px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">Create
-                    Account</button>
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-white/10">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-6 md:mb-0">
+                <div class="w-8 h-8 gradient-bg rounded-lg"></div>
+                <span class="font-bold">Course Copilot</span>
             </div>
-            <button onclick="hideModals()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">✕</button>
+            <p class="text-gray-500 text-sm">© 2026 Course Copilot. All rights reserved.</p>
         </div>
-    </div>
-
-    <script>
-        function hideAll() {
-            document.querySelectorAll('#main-content, #student-dashboard, #new-submission, #submission-detail, #match-results, #university-dashboard, #bulk-upload').forEach(el => el.classList.add('hidden'));
-        }
-
-        function hideModals() {
-            document.querySelectorAll('#login-modal, #register-modal').forEach(el => el.classList.add('hidden'));
-        }
-
-        function showHome() {
-            hideAll();
-            document.getElementById('main-content').classList.remove('hidden');
-        }
-
-        function showStudentDashboard() {
-            hideAll();
-            document.getElementById('student-dashboard').classList.remove('hidden');
-        }
-
-        function showNewSubmission() {
-            hideAll();
-            document.getElementById('new-submission').classList.remove('hidden');
-        }
-
-        function showSubmissionDetail() {
-            hideAll();
-            document.getElementById('submission-detail').classList.remove('hidden');
-        }
-
-        function showMatchResults() {
-            hideAll();
-            document.getElementById('match-results').classList.remove('hidden');
-        }
-
-        function showUniversityDashboard() {
-            hideAll();
-            document.getElementById('university-dashboard').classList.remove('hidden');
-        }
-
-        function showBulkUpload() {
-            hideAll();
-            document.getElementById('bulk-upload').classList.remove('hidden');
-        }
-
-        function showLogin() {
-            hideModals();
-            document.getElementById('login-modal').classList.remove('hidden');
-        }
-
-        function showRegister() {
-            hideModals();
-            document.getElementById('register-modal').classList.remove('hidden');
-        }
-
-        function simulateUpload(type) {
-            const el = document.getElementById(type + '-upload');
-            el.innerHTML = `
-                <svg class="w-12 h-12 mx-auto mb-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <p class="text-emerald-600 font-medium">File uploaded successfully!</p>
-                <p class="text-sm text-gray-500">sample_${type}.pdf</p>
-            `;
-        }
-    </script>
+    </footer>
 </body>
 
 </html>

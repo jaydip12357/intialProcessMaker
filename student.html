@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Course Copilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3">
+                <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                        </path>
+                    </svg>
+                </div>
+                <span class="text-2xl font-bold">Course Copilot</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-300 hover:text-white transition">Home</a>
+                <a href="student.html" class="text-white font-medium">Students</a>
+                <a href="professor.html" class="text-gray-300 hover:text-white transition">Professors</a>
+                <a href="university.html" class="text-gray-300 hover:text-white transition">Universities</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-400">John Doe</span>
+                <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-sm font-bold">JD
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-28 pb-16 px-6">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold">Student Dashboard</h1>
+                    <p class="text-gray-400 mt-1">Manage your transfer credit requests</p>
+                </div>
+                <button onclick="document.getElementById('new-request-modal').classList.remove('hidden')"
+                    class="px-6 py-3 gradient-bg text-white font-semibold rounded-xl hover:opacity-90 transition shadow-lg shadow-indigo-500/30 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    New Request
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid md:grid-cols-4 gap-4 mb-8">
+                <div class="glass rounded-xl p-5 card">
+                    <p class="text-gray-400 text-sm">Total Submissions</p>
+                    <p class="text-3xl font-bold mt-1">5</p>
+                </div>
+                <div class="glass rounded-xl p-5 card">
+                    <p class="text-gray-400 text-sm">Pending Review</p>
+                    <p class="text-3xl font-bold text-amber-400 mt-1">2</p>
+                </div>
+                <div class="glass rounded-xl p-5 card">
+                    <p class="text-gray-400 text-sm">Approved</p>
+                    <p class="text-3xl font-bold text-emerald-400 mt-1">3</p>
+                </div>
+                <div class="glass rounded-xl p-5 card">
+                    <p class="text-gray-400 text-sm">Credits Transferred</p>
+                    <p class="text-3xl font-bold text-indigo-400 mt-1">12</p>
+                </div>
+            </div>
+
+            <!-- Submissions Table -->
+            <div class="glass rounded-2xl overflow-hidden">
+                <div class="p-6 border-b border-white/10">
+                    <h2 class="text-xl font-semibold">Your Submissions</h2>
+                </div>
+                <div class="divide-y divide-white/5">
+                    <a href="submission.html"
+                        class="p-6 flex items-center justify-between hover:bg-white/5 transition cursor-pointer block">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
+                                <span class="text-lg font-bold">D</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Duke University Transfer</p>
+                                <p class="text-sm text-gray-400">3 courses • Submitted Feb 1, 2026</p>
+                            </div>
+                        </div>
+                        <span
+                            class="px-4 py-1.5 bg-amber-500/20 text-amber-400 rounded-full text-sm font-medium">Pending</span>
+                    </a>
+                    <div class="p-6 flex items-center justify-between hover:bg-white/5 transition">
+                        <div class="flex items-center space-x-4">
+                            <div
+                                class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400">
+                                <span class="text-lg font-bold">S</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Stanford University Transfer</p>
+                                <p class="text-sm text-gray-400">2 courses • Submitted Jan 15, 2026</p>
+                            </div>
+                        </div>
+                        <span
+                            class="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium">Approved</span>
+                    </div>
+                    <div class="p-6 flex items-center justify-between hover:bg-white/5 transition">
+                        <div class="flex items-center space-x-4">
+                            <div
+                                class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400">
+                                <span class="text-lg font-bold">M</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold">MIT Transfer Request</p>
+                                <p class="text-sm text-gray-400">4 courses • Submitted Jan 5, 2026</p>
+                            </div>
+                        </div>
+                        <span
+                            class="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium">Approved</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Request Modal -->
+    <div id="new-request-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-2xl p-8 w-full max-w-lg relative">
+            <button onclick="document.getElementById('new-request-modal').classList.add('hidden')"
+                class="absolute top-4 right-4 text-gray-400 hover:text-white">✕</button>
+            <h2 class="text-2xl font-bold mb-6">New Transfer Request</h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Target University</label>
+                    <select
+                        class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-white">
+                        <option>Duke University</option>
+                        <option>Stanford University</option>
+                        <option>MIT</option>
+                        <option>UC Berkeley</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Upload Transcript (PDF)</label>
+                    <div
+                        class="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-indigo-500 transition cursor-pointer">
+                        <svg class="w-10 h-10 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                        <p class="text-gray-400">Click to upload or drag and drop</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Upload Syllabus (PDF)</label>
+                    <div
+                        class="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-indigo-500 transition cursor-pointer">
+                        <svg class="w-10 h-10 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                        <p class="text-gray-400">Click to upload or drag and drop</p>
+                    </div>
+                </div>
+                <button
+                    onclick="alert('Request submitted! (Demo)'); document.getElementById('new-request-modal').classList.add('hidden')"
+                    class="w-full px-6 py-3 gradient-bg text-white font-semibold rounded-xl hover:opacity-90 transition">Submit
+                    Request</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
